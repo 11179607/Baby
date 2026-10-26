@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Para ti, mi bebecita 💌</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { min-height: 100%; }
+  body {
+    font-family: 'Georgia', serif;
+    background: linear-gradient(135deg, #2b0a1a 0%, #4a1030 45%, #1a0a14 100%);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Corazones flotantes suaves de fondo */
+  .fondo-corazones {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .corazon-flotante {
+    position: absolute;
+    bottom: -40px;
+    color: rgba(255, 150, 180, 0.35);
+    animation: subir linear infinite;
+    user-select: none;
+  }
+  @keyframes subir {
+    0%   { transform: translateY(0) rotate(0deg) scale(0.8); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 0.8; }
+    100% { transform: translateY(-115vh) rotate(35deg) scale(1.2); opacity: 0; }
+  }
+
+  /* Cuadro principal */
+  .cuadro {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 640px;
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 182, 193, 0.25);
+    border-radius: 24px;
+    padding: 36px 28px 30px;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6), 0 0 60px rgba(255, 107, 157, 0.08) inset;
+    min-height: 340px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: transform 0.6s ease, opacity 0.6s ease;
+  }
+  .cuadro.abriendo { animation: abrirCuadro 0.9s ease forwards; }
+  @keyframes abrirCuadro {
+    0%   { transform: scale(0.6) rotateX(35deg); opacity: 0; }
+    60%  { transform: scale(1.04) rotateX(0deg); opacity: 1; }
+    100% { transform: scale(1) rotateX(0deg); opacity: 1; }
+  }
+
+  /* Pantalla candado */
+  .corazon-grande {
+    text-align: center;
+    font-size: 2.4rem;
+    margin-bottom: 14px;
+    animation: latido 1.6s infinite;
+  }
+  @keyframes latido {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.18); }
+  }
+  h1 {
+    text-align: center;
+    font-size: 1.45rem;
+    color: #ffb6c1;
+    margin-bottom: 12px;
+    font-weight: normal;
+  }
+  p.sub {
+    text-align: center;
+    font-size: 0.95rem;
+    color: #d9c3cc;
+    line-height: 1.6;
+    margin-bottom: 22px;
+  }
+  input {
+    width: 100%;
+    padding: 14px;
+    font-size: 1.1rem;
+    text-align: center;
+    font-family: 'Georgia', serif;
+    border: 2px solid rgba(255, 182, 193, 0.35);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    outline: none;
+    letter-spacing: 3px;
+    margin-bottom: 14px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  input::placeholder { color: #a88f99; letter-spacing: 1px; }
+  input:focus { border-color: #ff8fb1; box-shadow: 0 0 18px rgba(255, 143, 177, 0.3); }
+
+  button {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.05rem;
+    font-family: 'Georgia', serif;
+    background: linear-gradient(135deg, #ff6b9d, #c44569);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  button:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(255, 107, 157, 0.45); }
+  button:active { transform: scale(0.98); }
+
+  .error { color: #ff7b8a; font-size: 0.9rem; text-align: center; min-height: 20px; margin-top: 10px; }
+
+  /* Pantalla de historia paso a paso */
+  .historia { display: none; }
+  .historia.activa { display: flex; flex-direction: column; justify-content: center; }
+
+  .burbuja {
+    background: rgba(255, 182, 193, 0.1);
+    border: 1px solid rgba(255, 182, 193, 0.22);
+    border-radius: 18px 18px 18px 6px;
+    padding: 22px 24px;
+    font-size: 1rem;
+    line-height: 1.8;
+    color: #fbe9ee;
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+    margin-bottom: 22px;
+  }
+  .burbuja.visible { opacity: 1; transform: translateY(0); }
+  .burbuja strong { color: #ffb6c1; }
+  .burbuja em { color: #ffd1dc; font-style: italic; }
+
+  /* Barra de progreso */
+  .progreso-contenedor {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .progreso {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ff9ec2, #ff4d7d, #ff2e63);
+    border-radius: 99px;
+    transition: width 0.8s ease;
+    box-shadow: 0 0 14px rgba(255, 77, 125, 0.7);
+  }
+
+  .contador {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #c9a7b4;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+
+  .boton-siguiente {
+    display: none;
+    background: linear-gradient(135deg, #ff8fb1, #e04a78);
+  }
+  .boton-siguiente.visible { display: block; }
+
+  /* Pantalla final */
+  .final {
+    display: none;
+    text-align: center;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .final.activa { display: flex; }
+  .final h2 {
+    font-size: 1.9rem;
+    color: #ffb6c1;
+    margin-bottom: 16px;
+    text-shadow: 0 0 24px rgba(255, 107, 157, 0.6);
+    animation: aparecerFinal 1.4s ease forwards;
+    opacity: 0;
+  }
+  .final p {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: #fbe9ee;
+    max-width: 480px;
+    margin-bottom: 14px;
+    animation: aparecerFinal 1.4s ease 0.5s forwards;
+    opacity: 0;
+  }
+  .final .firma {
+    font-style: italic;
+    color: #ffb6c1;
+    animation: aparecerFinal 1.4s ease 1s forwards;
+    opacity: 0;
+  }
+  @keyframes aparecerFinal {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Explosión de corazones */
+  .explosion {
+    position: fixed;
+    pointer-events: none;
+    z-index: 50;
+    font-size: 1.4rem;
+    animation: volar 1.8s ease-out forwards;
+  }
+  @keyframes volar {
+    0%   { transform: translate(0, 0) scale(0.4) rotate(0deg); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(1.4) rotate(var(--rot)); opacity: 0; }
+  }
+
+  @media (max-width: 480px) {
+    .cuadro { padding: 28px 20px 24px; }
+    h1 { font-size: 1.25rem; }
+    .burbuja { font-size: 0.95rem; padding: 18px 18px; }
+    .final h2 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Corazones suaves flotando de fondo -->
+<div class="fondo-corazones" id="fondoCorazones"></div>
+
+<!-- CUADRO 1: CANDADO -->
+<div class="cuadro" id="pantallaCandado">
+  <div class="corazon-grande">💌</div>
+  <h1>Tengo algo especial para ti…</h1>
+  <p class="sub">Pero antes, demuéstrame que recuerdas el día en que nos conocimos.<br>Escribe la fecha (DD/MM/AAAA)</p>
+  <input type="text" id="fecha" placeholder="DD/MM/AAAA" maxlength="10" autocomplete="off">
+  <button onclick="verificar()">Abrir mi carta 💖</button>
+  <div class="error" id="error"></div>
+</div>
+
+<!-- CUADRO 2: HISTORIA PASO A PASO -->
+<div class="cuadro historia" id="pantallaHistoria">
+  <div class="contador" id="contador">1 / 10</div>
+  <div class="progreso-contenedor"><div class="progreso" id="progreso"></div></div>
+  <div class="burbuja" id="burbuja"></div>
+  <button class="boton-siguiente" id="btnSiguiente" onclick="siguientePaso()">Siguiente 💗</button>
+</div>
+
+<!-- CUADRO 3: FINAL -->
+<div class="cuadro final" id="pantallaFinal">
+  <h2>Por siempre mi bebecita ❤️</h2>
+  <p>Si llegaste hasta aquí, es porque leíste cada palabra con el corazón. Y quiero que sepas que cada una la escribí pensando en ti, en lo sensible y hermosa que eres.</p>
+  <p>No quiero una historia perfecta, te quiero a ti: con tus lágrimas, tus risas, tus miedos y tus sueños. Contigo hasta el final.</p>
+  <p class="firma">Te amo infinito, mi bebecita. 💕</p>
+</div>
+
+<script>
+/* ---------- Corazones flotantes de fondo ---------- */
+const fondo = document.getElementById('fondoCorazones');
+const simbolos = ['❤', '💗', '💕', '🤍', '💖'];
+function crearCorazonFondo() {
+  const c = document.createElement('div');
+  c.className = 'corazon-flotante';
+  c.textContent = simbolos[Math.floor(Math.random() * simbolos.length)];
+  c.style.left = Math.random() * 100 + 'vw';
+  c.style.fontSize = (Math.random() * 16 + 10) + 'px';
+  c.style.animationDuration = (Math.random() * 8 + 9) + 's';
+  c.style.animationDelay = Math.random() * 6 + 's';
+  fondo.appendChild(c);
+  setTimeout(() => c.remove(), 20000);
+}
+for (let i = 0; i < 18; i++) setTimeout(crearCorazonFondo, i * 450);
+setInterval(crearCorazonFondo, 1200);
+
+/* ---------- Verificación de fecha ---------- */
+function verificar() {
+  const valor = document.getElementById('fecha').value.trim();
+  const limpio = valor.replace(/[\/\-\.\s]/g, '');
+  if (limpio === '21092023') {
+    abrirHistoria();
+  } else {
+    document.getElementById('error').textContent = 'Esa no es la fecha, mi amor… intenta de nuevo 💭';
+  }
+}
+
+/* ---------- Historia paso a paso: 10 mensajes ---------- */
+const mensajes = [
+  "Hola, mi bebecita. Si estás leyendo esto es porque recordaste el <strong>21 de septiembre de 2023</strong>… el día en que te conocí y, sin saberlo, empezó la historia más bonita de mi vida. 💫",
+
+  "Desde ese primer momento supe que había algo especial en ti. En tu forma de mirar, de reír, de hablar. Y hoy, con todo lo que hemos vivido, lo confirmo: <em>eras tú</em>. 🌹",
+
+  "Me enamoré de tus detalles: de lo sensible y delicada que eres, de esa forma tuya de sentir todo tan profundo, de tu corazón que no sabe querer a medias. 🤍",
+
+  "Hemos reído hasta que nos dolió el estómago, hemos hecho planes que todavía sueño cumplir contigo. Cada recuerdo contigo es de mis favoritos. 🥰",
+
+  "Y también hemos tenido días grises… peleas que dolieron, palabras que pesaron, silencios que nos alejaron por un momento. No te voy a mentir: esos días también fueron parte de nuestra historia. 💔",
+
+  "Pero incluso en medio de esas tormentas, nunca quise soltarte la mano. Porque cada discusión me enseñó algo, y cada reconciliación me recordó por qué te elijo a ti y a nadie más. ❤️‍🩹",
+
+  "Gracias por llorar conmigo, por enojarte y luego abrazarme, por quedarte cuando era más fácil irse. Gracias por ser tan tú, con todo lo que eso significa. 🙏",
+
+  "Te admiro, mi amor. Admiro tu sensibilidad, tu fuerza, la forma en que cuidas a los que quieres. Y me siento el hombre más afortunado de tenerte a mi lado. ✨",
+
+  "Hoy quiero prometerte algo: que voy a cuidarte, que voy a escucharte, que aunque el mundo se ponga difícil, voy a elegirte una y otra vez. Porque tú eres mi lugar seguro. 🌙",
+
+  "Y cuando llegues al final de esta carta, quiero que sepas algo que no me canso de repetirte: <strong>te amo con todo lo que soy</strong>, y no cambiaría ni un segundo de lo que hemos vivido. 💖"
+];
+
+let pasoActual = 0;
+let escribiendo = false;
+
+function abrirHistoria() {
+  const candado = document.getElementById('pantallaCandado');
+  const historia = document.getElementById('pantallaHistoria');
+
+  candado.style.display = 'none';
+  historia.classList.add('activa');
+  historia.classList.add('abriendo');
+
+  setTimeout(() => {
+    historia.classList.remove('abriendo');
+    mostrarPaso(0);
+  }, 700);
+}
+
+function mostrarPaso(indice) {
+  const burbuja = document.getElementById('burbuja');
+  const contador = document.getElementById('contador');
+  const progreso = document.getElementById('progreso');
+  const btn = document.getElementById('btnSiguiente');
+
+  escribiendo = true;
+  burbuja.classList.remove('visible');
+  btn.classList.remove('visible');
+
+  setTimeout(() => {
+    burbuja.innerHTML = mensajes[indice];
+    contador.textContent = (indice + 1) + ' / ' + mensajes.length;
+    progreso.style.width = ((indice + 1) / mensajes.length * 100) + '%';
+    burbuja.classList.add('visible');
+
+    setTimeout(() => {
+      escribiendo = false;
+      if (indice < mensajes.length - 1) {
+        btn.textContent = 'Siguiente 💗';
+      } else {
+        btn.textContent = 'Toca para el final ❤️';
+      }
+      btn.classList.add('visible');
+    }, 500);
+  }, 350);
+}
+
+function siguientePaso() {
+  if (escribiendo) return;
+  pasoActual++;
+
+  if (pasoActual < mensajes.length) {
+    mostrarPaso(pasoActual);
+  } else {
+    mostrarFinal();
+  }
+}
+
+/* ---------- Final con explosión de corazones ---------- */
+function mostrarFinal() {
+  const historia = document.getElementById('pantallaHistoria');
+  const final = document.getElementById('pantallaFinal');
+
+  historia.classList.remove('activa');
+  final.classList.add('activa');
+  final.classList.add('abriendo');
+
+  setTimeout(() => final.classList.remove('abriendo'), 900);
+
+  lanzarExplosion();
+  setTimeout(lanzarExplosion, 700);
+  setTimeout(lanzarExplosion, 1400);
+  setTimeout(lanzarExplosion, 2100);
+}
+
+function lanzarExplosion() {
+  const total = 65;
+  for (let i = 0; i < total; i++) {
+    const c = document.createElement('div');
+    c.className = 'explosion';
+    c.textContent = ['❤️', '❤️', '💖', '💗', '🌹'][Math.floor(Math.random() * 5)];
+
+    const centroX = window.innerWidth / 2;
+    const centroY = window.innerHeight / 2;
+
+    c.style.left = centroX + 'px';
+    c.style.top = centroY + 'px';
+
+    const angulo = Math.random() * Math.PI * 2;
+    const distancia = Math.random() * 400 + 80;
+
+    c.style.setProperty('--dx', Math.cos(angulo) * distancia + 'px');
+    c.style.setProperty('--dy', Math.sin(angulo) * distancia + 'px');
+    c.style.setProperty('--rot', (Math.random() * 720 - 360) + 'deg');
+
+    c.style.animationDuration = (Math.random() * 1 + 1.2) + 's';
+
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 2400);
+  }
+}
+
+/* ---------- Enter para enviar la fecha ---------- */
+document.getElementById('fecha').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') verificar();
+});
+</script>
+</body>
+</html>
